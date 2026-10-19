@@ -4,47 +4,62 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#0b0b12">
 <title>NEXORA AI Studio</title>
 <style>
 *{box-sizing:border-box}
-body{margin:0;background:#0b0b12;color:#f4f1ff;font:15px Arial,sans-serif}
-header{padding:22px;border-bottom:1px solid #29243d;display:flex;justify-content:space-between;align-items:center}
-.logo{font-size:23px;font-weight:bold;color:#aa8cff}
-.status{font-size:12px;color:#70e6bd}
+:root{--bg:#0b0b12;--panel:#14131f;--line:#302943;--purple:#a78bfa;--muted:#a8a3be;--green:#70e6bd}
+body{margin:0;background:var(--bg);color:#f4f1ff;font:15px Arial,sans-serif}
+header{padding:18px 22px;border-bottom:1px solid #29243d;display:flex;justify-content:space-between;align-items:center;gap:12px}
+.logo{font-size:23px;font-weight:bold;color:var(--purple)}
+.small{font-size:12px;color:#9d97b5;line-height:1.5}
+.status{font-size:12px;color:var(--green)}
 main{max-width:1100px;margin:auto;padding:22px}
-h1{font-size:clamp(28px,5vw,45px);margin-bottom:8px}
-p{color:#a8a3be;line-height:1.5}
-nav{display:flex;gap:8px;flex-wrap:wrap;margin:25px 0}
-button{background:#201b32;color:white;border:1px solid #39304f;padding:11px 15px;border-radius:10px;cursor:pointer}
-button:hover{border-color:#a78bfa}
+h1{font-size:clamp(28px,5vw,45px);margin:8px 0}
+h2{font-size:21px;margin-top:0}
+p{color:var(--muted);line-height:1.6}
+nav{display:flex;gap:8px;flex-wrap:wrap;margin:24px 0}
+button{background:#201b32;color:white;border:1px solid #39304f;padding:11px 15px;border-radius:10px;cursor:pointer;font-size:14px}
+button:hover{border-color:var(--purple)}
 button.active,.primary{background:#8059ec;border-color:#8059ec}
-.panel{background:#14131f;border:1px solid #2b2740;border-radius:16px;padding:18px;margin-bottom:15px}
-input,textarea,select{width:100%;padding:12px;background:#0c0b13;border:1px solid #38324c;border-radius:9px;color:white;margin:7px 0 13px}
+button:disabled{opacity:.6}
+.panel{background:var(--panel);border:1px solid #2b2740;border-radius:16px;padding:18px;margin-bottom:15px}
+input,textarea{width:100%;padding:12px;background:#0c0b13;border:1px solid #38324c;border-radius:9px;color:white;margin:7px 0 13px;font:inherit}
 textarea{min-height:120px;resize:vertical}
 label{font-size:13px;color:#c6c0dd}
 .page{display:none}.page.active{display:block}
 .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:15px 0}
 .stat{background:#171522;border:1px solid #2b2740;padding:15px;border-radius:12px}
 .number{font-size:25px;font-weight:bold;color:#b7a0ff}
-#chat{height:300px;overflow:auto;background:#0d0c14;border-radius:12px;padding:12px;margin:12px 0}
-.msg{padding:11px;margin:8px 0;border-radius:10px;white-space:pre-wrap;overflow-wrap:anywhere}
-.user{background:#443276;margin-left:12%}
-.bot{background:#211d30;margin-right:12%}
-.line{display:flex;gap:8px}.line input{flex:1;min-width:0}
+#chat{min-height:180px;max-height:420px;overflow:auto;background:#0d0c14;border-radius:12px;padding:12px;margin:12px 0}
+.msg{padding:11px;margin:8px 0;border-radius:10px;white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.55}
+.user{background:#443276;margin-left:10%}
+.bot{background:#211d30;margin-right:5%}
+.line{display:flex;gap:8px;align-items:center}
+.line input{flex:1;min-width:0}
 .example{padding:12px;border:1px solid #302b43;border-radius:10px;margin:9px 0;overflow-wrap:anywhere}
-.small{font-size:12px;color:#9d97b5}
-@media(max-width:550px){main{padding:14px}.stats{grid-template-columns:1fr}.line{flex-wrap:wrap}.line button{width:100%}}
+.pill{display:inline-block;padding:5px 9px;border-radius:20px;background:#211d30;color:#cbbaff;font-size:12px;margin:3px}
+a{color:#cbbaff;overflow-wrap:anywhere}
+@media(max-width:550px){main{padding:14px}.stats{grid-template-columns:repeat(3,minmax(0,1fr))}.stat{padding:10px}.number{font-size:21px}.line{flex-wrap:wrap}.line input{flex-basis:100%}.line button{width:100%}}
 </style>
 </head>
 <body>
 <header>
-  <div><div class="logo">✦ NEXORA AI</div><div class="small">STUDIO · EXPERIMENTAL MODEL</div></div>
-  <span class="status">● LOCAL MODE</span>
+  <div><div class="logo">✦ NEXORA AI</div><div class="small">STUDIO · KNOWLEDGE ENGINE</div></div>
+  <span class="status" id="connection">● CHECKING</span>
 </header>
+
 <main>
-  <p style="color:#b6a0ff;letter-spacing:2px">YOUR MODEL. YOUR EXAMPLES.</p>
+  <p style="color:#b6a0ff;letter-spacing:2px">YOUR MODEL. YOUR KNOWLEDGE.</p>
   <h1>Welcome to your AI Studio.</h1>
-  <p>Chat, teach your model with examples, and test its responses.</p>
+  <p>Chat, search your online knowledge, teach examples, and test your model.</p>
+
+  <div class="panel">
+    <span class="pill">ONLINE KNOWLEDGE</span>
+    <span class="pill">LOCAL TRAINING</span>
+    <p id="dbstatus" role="status">Checking database connection...</p>
+    <button id="checkdb">Test connection</button>
+  </div>
 
   <nav>
     <button class="active" data-page="chatpage">AI Chat</button>
@@ -55,132 +70,363 @@ label{font-size:13px;color:#c6c0dd}
 
   <section id="chatpage" class="page active">
     <div class="stats">
-      <div class="stat"><div class="number" id="total">0</div><div class="small">Training examples</div></div>
+      <div class="stat"><div class="number" id="total">0</div><div class="small">Examples</div></div>
       <div class="stat"><div class="number" id="cats">0</div><div class="small">Categories</div></div>
-      <div class="stat"><div class="number" id="sent">0</div><div class="small">Messages sent</div></div>
+      <div class="stat"><div class="number" id="sent">0</div><div class="small">Messages</div></div>
     </div>
     <div class="panel">
       <h2>AI Chat</h2>
-      <div id="chat"></div>
+      <div id="chat" aria-live="polite"></div>
       <form id="chatform" class="line">
-        <input id="question" placeholder="Ask NEXORA..." required>
-        <button class="primary">Send ↗</button>
+        <input id="question" placeholder="Ask NEXORA..." required autocomplete="off">
+        <button class="primary" id="sendbtn">Send ↗</button>
       </form>
-      <p class="small">This prototype matches your question to examples you teach it. It is not a full large language model.</p>
+      <p class="small">NEXORA searches your documents and saved examples. It does not independently generate facts outside its available knowledge.</p>
     </div>
   </section>
 
   <section id="trainpage" class="page">
     <div class="panel">
       <h2>Bulk Training</h2>
-      <p>Enter one example per line using: question || category || reply</p>
-      <textarea id="bulk" placeholder="hello || greeting || Hey! What can I help you with?&#10;who are you || identity || I'm NEXORA, your experimental AI."></textarea>
+      <p>One example per line: question || category || reply</p>
+      <textarea id="bulk" placeholder="hello || greeting || Hey! How can I help?"></textarea>
       <button class="primary" id="train">Add examples & train</button>
       <button id="sample">Load sample</button>
       <p id="trainresult" class="small"></p>
     </div>
     <div class="panel">
       <h2>Add one example</h2>
-      <label>Question</label><input id="q" placeholder="How do I code a website?">
-      <label>Category</label><input id="c" placeholder="coding">
-      <label>Reply</label><textarea id="r" placeholder="Write the answer your model should give"></textarea>
+      <label for="q">Question</label><input id="q" placeholder="How do I code a website?">
+      <label for="c">Category</label><input id="c" placeholder="coding">
+      <label for="r">Reply</label><textarea id="r" placeholder="Write your answer"></textarea>
       <button class="primary" id="addone">Save example</button>
+      <p class="small">These examples are saved in this browser on this device.</p>
     </div>
   </section>
 
   <section id="dashpage" class="page">
     <div class="panel">
       <h2>Training Dashboard</h2>
-      <input id="filter" placeholder="Search your training examples...">
+      <input id="filter" placeholder="Search training examples...">
       <div id="examples"></div>
-      <button id="clear">Clear all examples</button>
+      <button id="clear">Clear local examples</button>
+    </div>
+    <div class="panel">
+      <h2>Online Knowledge Library</h2>
+      <button id="loaddocs">Load documents</button>
+      <p id="docstatus" class="small"></p>
+      <div id="documents"></div>
     </div>
   </section>
 
   <section id="labpage" class="page">
     <div class="panel">
       <h2>Model Lab</h2>
-      <p>Test which saved training example best matches a prompt.</p>
+      <p>Test a prompt against your local examples and online documents.</p>
       <input id="testq" placeholder="Type a test question">
       <button class="primary" id="test">Test model</button>
       <div id="result" class="example">Your result will appear here.</div>
     </div>
   </section>
 </main>
+<footer style="text-align:center;padding:25px;color:#77718e;font-size:12px">NEXORA AI Studio · Experimental knowledge search</footer>
+
 <script>
-(()=>{
-const $=id=>document.getElementById(id);
-const starter=[
-{q:"hello",c:"greeting",r:"Hey! What can I help you with today?"},
-{q:"who are you",c:"identity",r:"I'm NEXORA, an experimental model you can teach with examples."},
-{q:"how do I make a website",c:"coding",r:"Start with an index.html file containing HTML, CSS, and JavaScript. Test it in your browser, then publish it with GitHub Pages."}
+(() => {
+"use strict";
+const $ = id => document.getElementById(id);
+
+/* Your Supabase project settings */
+const SUPABASE_URL = "https://ppcfilcbjwbhnxpyfcml.supabase.co";
+const SUPABASE_KEY = "sb_publishable_qpNY5y9uMz52L4rtYUo0NA_H4KuXPcO";
+
+const starter = [
+ {q:"hello",c:"greeting",r:"Hey! What can I help you with today?"},
+ {q:"who are you",c:"identity",r:"I'm NEXORA, an experimental AI you can teach."},
+ {q:"how do I make a website",c:"coding",r:"Create an index.html file with HTML, CSS and JavaScript, test it, then publish with GitHub Pages."}
 ];
-let data=[],sent=0;
-try{data=JSON.parse(localStorage.getItem("nexora_examples")||"null")||starter}catch(e){data=starter}
-try{sent=Number(localStorage.getItem("nexora_sent"))||0}catch(e){}
-function save(){try{localStorage.setItem("nexora_examples",JSON.stringify(data));localStorage.setItem("nexora_sent",sent)}catch(e){}}
-function tokens(s){return s.toLowerCase().replace(/[^a-z0-9 ]/g," ").split(/\s+/).filter(w=>w.length>2&&!["the","and","you","are","how","what","who","for","can","does"].includes(w))}
-function match(q){
- let a=new Set(tokens(q)),best=null,high=0;
- for(let e of data){
-  let b=new Set(tokens(e.q)),n=0;
-  a.forEach(w=>{if(b.has(w))n++});
-  let score=n/Math.max(1,a.size+b.size-n);
-  if(q.trim().toLowerCase()===e.q.toLowerCase())score+=2;
-  if(score>high){high=score;best=e}
+
+let data = [], sent = 0, busy = false;
+try {
+ const saved = localStorage.getItem("nexora_examples");
+ data = saved ? JSON.parse(saved) : starter.slice();
+ if (!Array.isArray(data)) data = starter.slice();
+} catch(e) { data = starter.slice(); }
+try { sent = Number(localStorage.getItem("nexora_sent")) || 0; } catch(e) {}
+
+function save() {
+ try {
+  localStorage.setItem("nexora_examples", JSON.stringify(data));
+  localStorage.setItem("nexora_sent", String(sent));
+ } catch(e) {}
+}
+
+function tokens(s) {
+ return String(s || "").toLowerCase().replace(/[^a-z0-9 ]/g," ")
+ .split(/\s+/).filter(w => w.length > 2 &&
+ !["the","and","you","are","how","what","who","for","can","does","with","your","this","that","from","have"].includes(w));
+}
+
+function similarity(question, text) {
+ const a = new Set(tokens(question)), b = new Set(tokens(text));
+ if (!a.size || !b.size) return 0;
+ let hits = 0;
+ a.forEach(w => { if (b.has(w)) hits++; });
+ return hits / a.size;
+}
+
+function localMatch(question) {
+ let best = null, high = 0;
+ for (const e of data) {
+  let score = similarity(question, e.q);
+  if (question.trim().toLowerCase() === e.q.trim().toLowerCase()) score = 2;
+  if (score > high) { high = score; best = e; }
  }
- if(!best||high<.12)return "I don't know that yet. Teach me a matching example in Bulk Training.";
- return best.r
+ return best && high >= .35
+  ? {answer:best.r,title:"Local example",source:"",score:high}
+  : null;
 }
-function bubble(text,who){let d=document.createElement("div");d.className="msg "+who;d.textContent=text;$("chat").appendChild(d);$("chat").scrollTop=$("chat").scrollHeight}
-bubble("Welcome to NEXORA. Ask me something or teach me a new response.","bot");
-function refresh(){
- $("total").textContent=data.length;
- $("cats").textContent=new Set(data.map(e=>e.c)).size;
- $("sent").textContent=sent;
- const box=$("examples");box.replaceChildren();
- let f=$("filter").value.toLowerCase();
- data.forEach((e,i)=>{
-  if(!(e.q+" "+e.c+" "+e.r).toLowerCase().includes(f))return;
-  let d=document.createElement("div");d.className="example";
-  let title=document.createElement("b");title.textContent=e.q+" · "+e.c;
-  let reply=document.createElement("p");reply.textContent=e.r;
-  let del=document.createElement("button");del.textContent="Delete";
-  del.onclick=()=>{data.splice(i,1);save();refresh()};
-  d.append(title,reply,del);box.appendChild(d);
+
+function bubble(text, who) {
+ const d = document.createElement("div");
+ d.className = "msg " + who;
+ d.textContent = text;
+ $("chat").appendChild(d);
+ $("chat").scrollTop = $("chat").scrollHeight;
+ return d;
+}
+
+function showAnswer(result, container) {
+ container.replaceChildren();
+ const answer = document.createElement("div");
+ answer.textContent = result.answer;
+ container.appendChild(answer);
+ if (result.title) {
+  const p = document.createElement("p");
+  p.className = "small";
+  p.textContent = "Source: " + result.title;
+  container.appendChild(p);
+ }
+ if (result.source) {
+  try {
+   const u = new URL(result.source);
+   if (["https:","http:"].includes(u.protocol)) {
+    const a = document.createElement("a");
+    a.href = u.href; a.target = "_blank";
+    a.rel = "noopener noreferrer";
+    a.textContent = "Open source";
+    container.appendChild(a);
+   }
+  } catch(e) {}
+ }
+}
+
+async function fetchDocuments() {
+ const endpoint = new URL(SUPABASE_URL + "/rest/v1/knowledge_documents");
+ endpoint.searchParams.set("select","title,subject,content,source_url");
+ endpoint.searchParams.set("limit","1000");
+
+ const response = await fetch(endpoint.toString(), {
+  headers: {
+   "apikey":SUPABASE_KEY,
+   "Authorization":"Bearer " + SUPABASE_KEY
+  }
  });
+
+ if (!response.ok) {
+  throw new Error("Supabase returned HTTP " + response.status +
+   ". Check the publishable key, Data API access, and table read permissions.");
+ }
+ const docs = await response.json();
+ if (!Array.isArray(docs)) throw new Error("Unexpected database response.");
+ return docs.filter(d => d && typeof d.content === "string");
 }
-document.querySelectorAll("[data-page]").forEach(b=>b.onclick=()=>{
- document.querySelectorAll("[data-page]").forEach(x=>x.classList.toggle("active",x===b));
- document.querySelectorAll(".page").forEach(x=>x.classList.toggle("active",x.id===b.dataset.page));
+
+function documentMatch(question, docs) {
+ let best = null, high = 0;
+ for (const doc of docs) {
+  const title = doc.title || "Untitled document";
+  const score = Math.max(
+   similarity(question, title + " " + (doc.subject || "")),
+   similarity(question, doc.content) * .85
+  );
+  if (score > high) { high = score; best = doc; }
+ }
+ return best && high >= .30
+  ? {answer:best.content,title:best.title || "Untitled document",source:best.source_url || "",score:high}
+  : null;
+}
+
+async function findAnswer(question) {
+ let docs = [], dbError = null;
+ try { docs = await fetchDocuments(); }
+ catch(e) { dbError = e; }
+
+ const online = documentMatch(question, docs);
+ const local = localMatch(question);
+
+ if (online && (!local || online.score >= local.score * .8)) return online;
+ if (local) return local;
+ if (online) return online;
+
+ if (dbError) {
+  return {
+   answer:"I couldn't access your online knowledge library. " + dbError.message +
+    "\n\nYou can still teach me examples in Bulk Training.",
+   title:"Connection notice",source:""
+  };
+ }
+ return {
+  answer:"I couldn't find a close match in the knowledge library or your examples. Try different wording or teach me a relevant example.",
+  title:"No close match",source:""
+ };
+}
+
+function refresh() {
+ $("total").textContent = data.length;
+ $("cats").textContent = new Set(data.map(e => e.c)).size;
+ $("sent").textContent = sent;
+ const box = $("examples");
+ box.replaceChildren();
+ const filter = $("filter").value.toLowerCase();
+
+ data.forEach((e,i) => {
+  if (!(e.q+" "+e.c+" "+e.r).toLowerCase().includes(filter)) return;
+  const d = document.createElement("div"); d.className = "example";
+  const title = document.createElement("b"); title.textContent = e.q+" · "+e.c;
+  const reply = document.createElement("p"); reply.textContent = e.r;
+  const del = document.createElement("button"); del.textContent = "Delete";
+  del.onclick = () => { data.splice(i,1); save(); refresh(); };
+  d.append(title,reply,del); box.appendChild(d);
+ });
+ if (!box.children.length) box.textContent = "No matching local examples.";
+}
+
+async function checkDatabase() {
+ $("connection").textContent = "● CHECKING";
+ $("dbstatus").textContent = "Connecting to Supabase...";
+ try {
+  const docs = await fetchDocuments();
+  $("connection").textContent = "● ONLINE";
+  $("dbstatus").textContent = "Connected! " + docs.length + " knowledge document(s) available.";
+ } catch(e) {
+  $("connection").textContent = "● ERROR";
+  $("dbstatus").textContent = e.message;
+ }
+}
+
+$("checkdb").onclick = checkDatabase;
+
+document.querySelectorAll("[data-page]").forEach(button => {
+ button.onclick = () => {
+  document.querySelectorAll("[data-page]").forEach(b => b.classList.toggle("active",b===button));
+  document.querySelectorAll(".page").forEach(p => p.classList.toggle("active",p.id===button.dataset.page));
+ };
 });
-$("chatform").onsubmit=e=>{
- e.preventDefault();let q=$("question").value.trim();if(!q)return;
- bubble(q,"user");bubble(match(q),"bot");sent++;save();$("question").value="";refresh();
+
+$("chatform").onsubmit = async event => {
+ event.preventDefault();
+ if (busy) return;
+ const question = $("question").value.trim();
+ if (!question) return;
+
+ busy = true; $("sendbtn").disabled = true;
+ bubble(question,"user"); $("question").value = "";
+ const loading = bubble("Searching your knowledge...","bot");
+
+ try {
+  const result = await findAnswer(question);
+  loading.remove();
+  const holder = document.createElement("div");
+  holder.className = "msg bot";
+  $("chat").appendChild(holder);
+  showAnswer(result,holder);
+  $("chat").scrollTop = $("chat").scrollHeight;
+ } catch(e) {
+  loading.textContent = "Search failed: " + e.message;
+ }
+
+ sent++; save(); refresh();
+ busy = false; $("sendbtn").disabled = false;
+ $("question").focus();
 };
-$("sample").onclick=()=>{$("bulk").value="hello || greeting || Hey! What can I help you with?\\nwho are you || identity || I'm NEXORA, an experimental AI you can teach.\\nhow do I make a website || coding || Start with an index.html file and add HTML, CSS, and JavaScript.";};
-$("train").onclick=()=>{
- let added=0,skipped=0;
- $("bulk").value.split(/\r?\n/).forEach(line=>{
-  if(!line.trim())return;
-  let p=line.split("||").map(x=>x.trim());
-  if(p.length<3||!p[0]||!p[1]||!p.slice(2).join("||").trim()){skipped++;return}
-  data.push({q:p[0],c:p[1],r:p.slice(2).join("||").trim()});added++;
+
+$("sample").onclick = () => {
+ $("bulk").value =
+  "hello || greeting || Hey! What can I help you with?\n"+
+  "who are you || identity || I'm NEXORA, your experimental AI.\n"+
+  "how do I make a website || coding || Create an index.html file with HTML, CSS and JavaScript.";
+};
+
+$("train").onclick = () => {
+ let added = 0, skipped = 0;
+ $("bulk").value.split(/\r?\n/).forEach(line => {
+  if (!line.trim()) return;
+  const p = line.split("||").map(s => s.trim());
+  if (p.length < 3 || !p[0] || !p[1] || !p.slice(2).join("||").trim()) { skipped++; return; }
+  data.push({q:p[0],c:p[1],r:p.slice(2).join("||").trim()}); added++;
  });
- save();refresh();$("trainresult").textContent="Added "+added+" examples. Skipped "+skipped+" invalid lines.";
+ save(); refresh();
+ $("trainresult").textContent = "Added " + added + " examples. Skipped " + skipped + " invalid lines.";
 };
-$("addone").onclick=()=>{
- let q=$("q").value.trim(),c=$("c").value.trim(),r=$("r").value.trim();
- if(!q||!c||!r){alert("Fill in all three fields first.");return}
- data.push({q,c,r});["q","c","r"].forEach(id=>$(id).value="");save();refresh();alert("Example saved!");
+
+$("addone").onclick = () => {
+ const q=$("q").value.trim(), c=$("c").value.trim(), r=$("r").value.trim();
+ if (!q || !c || !r) { $("trainresult").textContent = "Fill in all three fields first."; return; }
+ data.push({q,c,r});
+ ["q","c","r"].forEach(id => $(id).value = "");
+ save(); refresh();
+ $("trainresult").textContent = "Example saved locally.";
 };
-$("filter").oninput=refresh;
-$("clear").onclick=()=>{if(confirm("Delete all training examples?")){data=[];save();refresh()}};
-$("test").onclick=()=>{
- let q=$("testq").value.trim();if(!q)return;
- $("result").textContent=match(q);
+
+$("filter").oninput = refresh;
+$("clear").onclick = () => {
+ if (confirm("Delete all local training examples?")) { data=[]; save(); refresh(); }
 };
-refresh();save();
+
+$("loaddocs").onclick = async () => {
+ $("docstatus").textContent = "Loading documents...";
+ $("documents").replaceChildren();
+ try {
+  const docs = await fetchDocuments();
+  $("docstatus").textContent = docs.length + " document(s) found.";
+  docs.forEach(doc => {
+   const card = document.createElement("div"); card.className = "example";
+   const title = document.createElement("b"); title.textContent = doc.title || "Untitled document";
+   const subject = document.createElement("p"); subject.textContent = "Subject: " + (doc.subject || "General");
+   const content = document.createElement("p"); content.textContent = doc.content || "";
+   card.append(title,subject,content);
+   if (doc.source_url) {
+    try {
+     const u = new URL(doc.source_url);
+     if (["https:","http:"].includes(u.protocol)) {
+      const a = document.createElement("a"); a.href = u.href;
+      a.target = "_blank"; a.rel = "noopener noreferrer";
+      a.textContent = "Open source"; card.appendChild(a);
+     }
+    } catch(e) {}
+   }
+   $("documents").appendChild(card);
+  });
+  if (!docs.length) $("documents").textContent = "The library is empty.";
+ } catch(e) { $("docstatus").textContent = e.message; }
+};
+
+$("test").onclick = async () => {
+ const q = $("testq").value.trim();
+ if (!q) return;
+ $("result").textContent = "Searching...";
+ try {
+  const result = await findAnswer(q);
+  showAnswer(result,$("result"));
+ } catch(e) {
+  $("result").textContent = "Test failed: " + e.message;
+ }
+};
+
+bubble("Welcome to NEXORA. Ask a question to search your online knowledge library and local examples.","bot");
+refresh();
+checkDatabase();
 })();
 </script>
 </body>
