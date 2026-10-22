@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#090911">
+<meta name="description" content="NEXORA AI Studio: a searchable, expandable knowledge workspace.">
+<title>NEXORA AI Studio</title>
+<style>
+:root{
+  color-scheme:dark;
+  --bg:#090911;--surface:#11111c;--panel:#151522;--panel2:#1b1a2b;
+  --line:#2b2941;--line2:#3b3656;--text:#f5f3ff;--muted:#aaa6c2;
+  --purple:#a78bfa;--purple2:#8059ec;--cyan:#8ce8f3;--green:#7ce7bd;
+  --danger:#ff9baf;--radius:18px;--shadow:0 18px 50px #0003;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:radial-gradient(ellipse at 50% -15%,#29204c 0,transparent 48%),var(--bg);color:var(--text);font:15px/1.5 Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+button,input,textarea{font:inherit}
+button{cursor:pointer}
+button:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px solid var(--cyan);outline-offset:2px}
+a{color:var(--cyan);overflow-wrap:anywhere}
+.app{min-height:100vh}
+.topbar{height:72px;position:sticky;top:0;z-index:10;display:flex;align-items:center;justify-content:space-between;gap:14px;padding:0 24px;border-bottom:1px solid #ffffff12;background:#0c0b15eF;backdrop-filter:blur(18px)}
+.brand{display:flex;align-items:center;gap:11px;min-width:0}
+.brandmark{width:39px;height:39px;display:grid;place-items:center;border-radius:13px;background:linear-gradient(145deg,#b49aff,#7750e7);box-shadow:0 6px 24px #8059ec45;color:#fff;font-size:21px}
+.brandname{font-size:17px;font-weight:800;letter-spacing:.2px}
+.brandtag{font-size:10px;letter-spacing:1.8px;color:var(--muted)}
+.topright{display:flex;align-items:center;gap:10px}
+.connection{font-size:12px;color:var(--green);padding:7px 10px;border:1px solid #7ce7bd2b;border-radius:999px;background:#7ce7bd0b}
+.connection.error{color:var(--danger);border-color:#ff9baf2b;background:#ff9baf0b}
+.layout{max-width:1440px;margin:auto;display:grid;grid-template-columns:238px minmax(0,1fr);gap:24px;padding:24px}
+.sidebar{position:sticky;top:96px;align-self:start;padding:13px;border:1px solid var(--line);border-radius:20px;background:#11111cd9}
+.navlabel{padding:12px 10px 7px;color:#77738e;font-size:10px;font-weight:800;letter-spacing:1.7px}
+.navbtn{width:100%;display:flex;align-items:center;gap:11px;text-align:left;border:1px solid transparent;border-radius:12px;padding:11px 12px;background:transparent;color:#c8c4db;margin:3px 0;font-size:13px;transition:background .18s,border-color .18s,transform .18s}
+.navbtn:hover{background:#ffffff08;border-color:#ffffff10;transform:translateX(2px)}
+.navbtn.active{background:linear-gradient(100deg,#8059ec32,#8059ec0a);border-color:#a78bfa45;color:#fff}
+.navicon{width:24px;text-align:center;font-size:16px}
+.sidebar-note{margin:20px 3px 2px;padding:13px;border:1px solid #8ce8f322;border-radius:13px;background:#8ce8f309}
+.sidebar-note strong{display:block;font-size:12px;margin-bottom:4px}
+.sidebar-note p{font-size:11px;color:var(--muted);margin:0}
+.content{min-width:0}
+.page{display:none;animation:fade .2s ease}.page.active{display:block}
+@keyframes fade{from{opacity:.45;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
+.eyebrow{font-size:10px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:var(--purple)}
+.hero{padding:16px 0 22px}
+h1{font-size:clamp(29px,4.5vw,46px);letter-spacing:-1.5px;line-height:1.08;margin:10px 0 12px}
+h2{font-size:19px;letter-spacing:-.3px;margin:0 0 8px}
+h3{font-size:14px;margin:0 0 7px}
+p{color:var(--muted);line-height:1.65;margin:8px 0}
+.subhead{max-width:700px;font-size:15px}
+.panel{background:linear-gradient(145deg,#171624,#12121d);border:1px solid var(--line);border-radius:var(--radius);padding:20px;margin-bottom:16px;box-shadow:0 8px 28px #0000000b}
+.panelhead{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:12px}
+.panelhead p{font-size:12px;margin:3px 0}
+.tag{display:inline-flex;align-items:center;gap:6px;border:1px solid #a78bfa30;border-radius:999px;background:#a78bfa0d;padding:5px 9px;color:#c9baff;font-size:10px;letter-spacing:.4px}
+.tag.cyan{border-color:#8ce8f32c;background:#8ce8f30a;color:var(--cyan)}
+.stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:2px 0 18px}
+.stat{min-width:0;padding:16px;border:1px solid var(--line);border-radius:16px;background:linear-gradient(140deg,#191827,#12121c)}
+.stat-icon{font-size:17px;margin-bottom:9px}
+.number{font-size:27px;font-weight:800;letter-spacing:-.7px;color:#c6b5ff;line-height:1.1}
+.statlabel{font-size:11px;color:var(--muted);margin-top:6px}
+.fieldlabel{display:block;color:#d6d1e8;font-size:12px;font-weight:650;margin:12px 0 6px}
+input,textarea{width:100%;min-width:0;padding:12px 13px;color:var(--text);background:#0a0a12;border:1px solid #302d46;border-radius:12px;outline:none;transition:border .15s,box-shadow .15s}
+input:focus,textarea:focus{border-color:#9c80fa;box-shadow:0 0 0 3px #9c80fa18}
+input::placeholder,textarea::placeholder{color:#706b86}
+textarea{min-height:130px;resize:vertical;line-height:1.6}
+.btn{display:inline-flex;justify-content:center;align-items:center;gap:8px;border:1px solid var(--line2);border-radius:11px;background:#211e32;color:#f4f1ff;padding:10px 14px;font-size:12px;font-weight:700;transition:transform .15s,border-color .15s,filter .15s}
+.btn:hover{border-color:var(--purple);filter:brightness(1.1);transform:translateY(-1px)}
+.btn.primary{background:linear-gradient(120deg,#906af5,#7048d8);border-color:#9270f4;color:#fff;box-shadow:0 7px 22px #8059ec26}
+.btn.ghost{background:transparent}
+.btn.danger{color:#ffb4c2;border-color:#ff9baf3b;background:#ff9baf0a}
+.btn:disabled{opacity:.55;cursor:wait;transform:none}
+.btnrow{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.chatbox{height:min(50vh,470px);min-height:240px;overflow:auto;padding:14px;border:1px solid #26243a;border-radius:15px;background:radial-gradient(ellipse at 50% 0,#1b1730 0,transparent 70%),#0b0b13}
+.msg{max-width:92%;padding:12px 14px;border-radius:14px;margin:9px 0;white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.65;font-size:13px}
+.msg.user{margin-left:auto;background:linear-gradient(130deg,#6744ba,#4a327e);border:1px solid #a78bfa4a;border-bottom-right-radius:5px;color:#fff}
+.msg.bot{margin-right:auto;background:#1a1928;border:1px solid #302d45;border-bottom-left-radius:5px}
+.msg .source{display:block;margin-top:10px;color:#a9a2c7;font-size:10px}
+.msg a{display:inline-block;margin-top:6px;font-size:12px}
+.composer{display:flex;align-items:center;gap:9px;margin-top:12px}
+.composer input{flex:1}
+.composer .btn{min-height:44px}
+.suggestions{display:flex;gap:7px;flex-wrap:wrap;margin-top:12px}
+.suggestion{font-size:11px;padding:7px 10px;border:1px solid #302d45;border-radius:999px;color:#c7c0e0;background:#ffffff04}
+.suggestion:hover{border-color:var(--purple);color:#fff}
+.callout{padding:12px 14px;border-radius:12px;background:#8ce8f308;border:1px solid #8ce8f31e;color:#b9b5cd;font-size:12px;line-height:1.6}
+.grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.featuregrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:11px}
+.feature{padding:15px;border:1px solid var(--line);border-radius:14px;background:#ffffff03}
+.feature .ficon{font-size:21px;margin-bottom:8px}
+.feature p{font-size:12px;margin:5px 0 0}
+.example{padding:14px;border:1px solid #302d45;border-radius:13px;margin:10px 0;background:#ffffff03;overflow-wrap:anywhere}
+.examplehead{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}
+.example p{font-size:12px;white-space:pre-wrap}
+.small{font-size:11px;color:#918ba9;line-height:1.6}
+.pill{display:inline-block;padding:4px 8px;border-radius:999px;background:#242038;color:#c8b7ff;font-size:10px;margin:2px}
+.empty{padding:25px 12px;text-align:center;color:#928ca9;font-size:12px}
+.doccontent{max-height:180px;overflow:auto;white-space:pre-wrap}
+footer{text-align:center;padding:18px 20px 30px;color:#68637e;font-size:10px}
+.hidden{display:none!important}
+@media(max-width:850px){
+ .layout{grid-template-columns:1fr;padding:15px;gap:15px}
+ .sidebar{position:static;display:flex;gap:5px;overflow-x:auto;padding:7px;border-radius:14px}
+ .navlabel,.sidebar-note{display:none}
+ .navbtn{flex:0 0 auto;width:auto;white-space:nowrap;padding:10px}
+ .navicon{width:auto}
+ .stats{grid-template-columns:repeat(4,minmax(0,1fr))}
+ .topbar{padding:0 15px}
+}
+@media(max-width:560px){
+ .topbar{height:64px}
+ .brandmark{width:35px;height:35px}
+ .brandname{font-size:15px}
+ .brandtag{font-size:9px;letter-spacing:1px}
+ .connection{font-size:10px;padding:6px 8px}
+ .layout{padding:11px;gap:12px}
+ .navbtn{font-size:11px;padding:9px 10px;gap:6px}
+ .navicon{font-size:14px}
+ .hero{padding:10px 0 16px}
+ h1{letter-spacing:-1px}
+ .stats{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+ .stat{padding:12px}
+ .number{font-size:24px}
+ .panel{padding:15px;border-radius:15px}
+ .grid2,.featuregrid{grid-template-columns:1fr}
+ .composer{align-items:stretch}
+ .composer input{font-size:13px}
+ .composer .btn{padding:10px}
+ .chatbox{height:45vh;min-height:230px;padding:9px}
+ .msg{max-width:97%;font-size:12px;padding:11px}
+ .panelhead{flex-wrap:wrap}
+}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div class="app">
+<header class="topbar">
+  <div class="brand">
+    <div class="brandmark">✦</div>
+    <div><div class="brandname">NEXORA AI Studio</div><div class="brandtag">KNOWLEDGE WORKSPACE</div></div>
+  </div>
+  <div class="topright"><span id="connection" class="connection">● CHECKING</span></div>
+</header>
+
+<div class="layout">
+  <aside class="sidebar" aria-label="Main navigation">
+    <div class="navlabel">WORKSPACE</div>
+    <button class="navbtn active" data-page="chatpage"><span class="navicon">✧</span> AI Chat</button>
+    <button class="navbtn" data-page="librarypage"><span class="navicon">⌕</span> Knowledge Library</button>
+    <button class="navbtn" data-page="trainpage"><span class="navicon">＋</span> Teach NEXORA</button>
+    <button class="navbtn" data-page="dashpage"><span class="navicon">▤</span> Dashboard</button>
+    <button class="navbtn" data-page="labpage"><span class="navicon">⌘</span> Model Lab</button>
+    <div class="sidebar-note"><strong>✦ Built to expand</strong><p>Search built-in knowledge, your saved examples, and connected documents.</p></div>
+  </aside>
+
+  <main class="content">
+    <section id="chatpage" class="page active">
+      <div class="hero">
+        <div class="eyebrow">YOUR MODEL. YOUR KNOWLEDGE.</div>
+        <h1>Ideas start here.</h1>
+        <p class="subhead">Ask a question and NEXORA will search its built-in knowledge, your own examples, and your connected document library.</p>
+      </div>
+      <div class="stats">
+        <div class="stat"><div class="stat-icon">✧</div><div class="number" id="total">0</div><div class="statlabel">Your examples</div></div>
+        <div class="stat"><div class="stat-icon">◈</div><div class="number" id="builtin">0</div><div class="statlabel">Built-in topics</div></div>
+        <div class="stat"><div class="stat-icon">⌘</div><div class="number" id="cats">0</div><div class="statlabel">Categories</div></div>
+        <div class="stat"><div class="stat-icon">↗</div><div class="number" id="sent">0</div><div class="statlabel">Questions asked</div></div>
+      </div>
+      <div class="panel">
+        <div class="panelhead"><div><h2>Chat with NEXORA</h2><p>Knowledge search · No per-question API call</p></div><span class="tag">● LOCAL ENGINE</span></div>
+        <div id="chat" class="chatbox" aria-live="polite">
+          <div class="msg bot">Welcome to NEXORA. Ask about coding, science, history, math, game development, and more. I search the knowledge available to me and show you the source type.</div>
+        </div>
+        <form id="chatform" class="composer">
+          <input id="question" placeholder="Ask anything in your knowledge library..." required autocomplete="off" aria-label="Ask NEXORA a question">
+          <button class="btn primary" id="sendbtn" type="submit">Send ↗</button>
+        </form>
+        <div class="suggestions">
+          <button class="suggestion" data-prompt="How do I make a website?">Build a website</button>
+          <button class="suggestion" data-prompt="Explain JavaScript variables">Learn JavaScript</button>
+          <button class="suggestion" data-prompt="How do I make a Roblox game?">Make a Roblox game</button>
+          <button class="suggestion" data-prompt="Explain the solar system">Explore science</button>
+        </div>
+        <p class="small">This is a searchable knowledge engine, not a full generative language model. It can only answer from its built-in library, your examples, and connected documents.</p>
+      </div>
+    </section>
+
+    <section id="librarypage" class="page">
+      <div class="hero"><div class="eyebrow">EXPLORE WHAT NEXORA KNOWS</div><h1>Knowledge library.</h1><p class="subhead">Browse and search the built-in starter library. Add more material any time from Teach NEXORA or your Supabase documents.</p></div>
+      <div class="panel">
+        <div class="panelhead"><div><h2>Search knowledge</h2><p id="libcount">Built-in topics</p></div><span class="tag cyan">BUILT-IN</span></div>
+        <input id="libsearch" placeholder="Search topics, keywords, or subjects..." aria-label="Search knowledge library">
+        <div id="libcats" class="suggestions"></div>
+        <div id="libraryitems"></div>
+      </div>
+    </section>
+
+    <section id="trainpage" class="page">
+      <div class="hero"><div class="eyebrow">CUSTOMIZE YOUR ASSISTANT</div><h1>Teach NEXORA.</h1><p class="subhead">Add question-and-answer examples to your browser's local storage. They stay on this device and browser unless you clear them.</p></div>
+      <div class="grid2">
+        <div class="panel">
+          <h2>Bulk training</h2><p>Put one example on each line using: <strong>question || category || reply</strong></p>
+          <label class="fieldlabel" for="bulk">Training examples</label>
+          <textarea id="bulk" placeholder="What is HTML? || coding || HTML structures content on a web page."></textarea>
+          <div class="btnrow"><button class="btn primary" id="train">Add examples</button><button class="btn" id="sample">Load sample</button></div>
+          <p id="trainresult" class="small" role="status"></p>
+        </div>
+        <div class="panel">
+          <h2>Add one example</h2>
+          <label class="fieldlabel" for="q">Question or topic</label><input id="q" placeholder="How do I make a website?">
+          <label class="fieldlabel" for="c">Category</label><input id="c" placeholder="coding">
+          <label class="fieldlabel" for="r">Answer</label><textarea id="r" placeholder="Write a useful answer..."></textarea>
+          <button class="btn primary" id="addone">Save example</button>
+          <p class="small">Your examples are stored locally in this browser. They are not automatically uploaded to Supabase.</p>
+        </div>
+      </div>
+      <div class="callout">Tip: write clear questions and useful answers. The matching engine uses your question, category, and answer text to find relevant examples.</div>
+    </section>
+
+    <section id="dashpage" class="page">
+      <div class="hero"><div class="eyebrow">YOUR WORKSPACE AT A GLANCE</div><h1>Dashboard.</h1><p class="subhead">Manage your saved examples and check the connection to your online document library.</p></div>
+      <div class="panel">
+        <div class="panelhead"><div><h2>Your saved examples</h2><p>Filter, review, or delete local examples.</p></div><span class="tag" id="examplecount">0 EXAMPLES</span></div>
+        <input id="filter" placeholder="Search your examples...">
+        <div id="examples"></div>
+        <div class="btnrow"><button class="btn danger" id="clear">Clear local examples</button><button class="btn" id="export">Export examples JSON</button><label class="btn ghost" for="importfile">Import JSON<input id="importfile" type="file" accept=".json,application/json" class="hidden"></label></div>
+        <p id="importstatus" class="small"></p>
+      </div>
+      <div class="panel">
+        <div class="panelhead"><div><h2>Connected documents</h2><p>Documents from your Supabase knowledge_documents table.</p></div><span class="tag cyan">SUPABASE</span></div>
+        <button class="btn primary" id="loaddocs">Load documents</button><p id="docstatus" class="small" role="status"></p><div id="documents"></div>
+      </div>
+      <div class="panel">
+        <h2>Connection status</h2><p id="dbstatus">Checking database connection...</p><button class="btn" id="checkdb">Test connection again</button>
+      </div>
+    </section>
+
+    <section id="labpage" class="page">
+      <div class="hero"><div class="eyebrow">TEST YOUR KNOWLEDGE ENGINE</div><h1>Model lab.</h1><p class="subhead">Test how NEXORA finds answers across its built-in knowledge, your examples, and connected documents.</p></div>
+      <div class="panel">
+        <h2>Run a test query</h2>
+        <label class="fieldlabel" for="testq">Question</label><input id="testq" placeholder="Type a question to test">
+        <button class="btn primary" id="test">Run test ↗</button>
+        <div id="result" class="example" aria-live="polite">Your result will appear here.</div>
+      </div>
+      <div class="callout">The lab tests retrieval quality, not model training. It doesn't change the underlying knowledge unless you save new examples or add documents.</div>
+    </section>
+  </main>
+</div>
+<footer>NEXORA AI STUDIO · EXPERIMENTAL KNOWLEDGE ENGINE · YOUR LOCAL EXAMPLES STAY IN THIS BROWSER</footer>
+</div>
+
+<script>
+(() => {
+"use strict";
+const $ = id => document.getElementById(id);
+
+/* Supabase public browser settings. Never put a service_role/secret key in this file. */
+const SUPABASE_URL = "https://ppcfilcbjwbhnxpyfcml.supabase.co";
+const SUPABASE_KEY = "sb_publishable_qpNY5y9uMz52L4rtYUo0NA_H4KuXPcO";
+
+/* A curated starter library. This is searchable reference content, not an LLM. */
+const KNOWLEDGE = [
+{title:"HTML basics",category:"Programming",keywords:"html webpage website tags elements structure frontend",content:"HTML (HyperText Markup Language) describes the structure of a web page. A basic page uses <!DOCTYPE html>, <html>, <head>, and <body>. Put visible page content in body, page settings and the title in head. HTML is markup, not a programming language."},
+{title:"CSS basics",category:"Programming",keywords:"css style design colors layout responsive website",content:"CSS styles HTML elements. Use selectors to target elements and properties to change appearance. Put CSS inside a <style> element in a single-file project or in a separate .css file. Flexbox is useful for one-dimensional layouts; CSS Grid is useful for rows and columns."},
+{title:"JavaScript basics",category:"Programming",keywords:"javascript js code programming browser interaction",content:"JavaScript adds behavior to web pages. Use const for values that should not be reassigned and let for values that will change. Functions package reusable behavior. Add an event listener to respond to a click or form submission. Check the browser console when debugging."},
+{title:"Variables and data types",category:"Programming",keywords:"javascript variables const let string number boolean array object",content:"A variable stores a value. Common JavaScript types include strings (text), numbers, booleans (true/false), arrays (ordered lists), objects (key-value data), null, and undefined. Prefer const by default, and use let when reassignment is needed."},
+{title:"Functions",category:"Programming",keywords:"javascript function parameters return reusable code",content:"A function is a reusable block of code. Example: function add(a, b) { return a + b; }. Parameters are inputs, and return sends a result back to the caller. Keep functions focused so they are easier to test and debug."},
+{title:"Debugging JavaScript",category:"Programming",keywords:"debug error console inspect code fix bug",content:"To debug JavaScript, read the exact error message, inspect the line number, check the browser developer console, and test a small change at a time. Common causes include misspelled IDs, missing brackets, invalid JSON, and trying to use an element before it exists."},
+{title:"Build a website",category:"Web development",keywords:"website html css javascript index github pages publish",content:"To build a simple website, create an index.html file with the page structure, add CSS for styling, and add JavaScript for interaction. Test it in a browser. For a static site, upload index.html to a GitHub repository and enable GitHub Pages in the repository's Pages settings."},
+{title:"GitHub Pages",category:"Web development",keywords:"github pages publish host static website repository index.html",content:"GitHub Pages hosts static websites made from HTML, CSS, JavaScript, images, and other static files. The main page is commonly named index.html. Open the repository's Settings, find Pages, select the branch and folder to publish, and save. GitHub Pages does not run server-side code such as a private Node.js server."},
+{title:"Responsive design",category:"Web development",keywords:"mobile phone responsive css media queries screen size layout",content:"Responsive design lets a site adapt to different screen sizes. Use a viewport meta tag, flexible widths, CSS Grid or Flexbox, and media queries such as @media (max-width: 600px). Test buttons, forms, and text on a narrow phone screen as well as a desktop."},
+{title:"Web accessibility",category:"Web development",keywords:"accessibility a11y keyboard screen reader contrast labels",content:"Accessible web pages use semantic HTML, clear headings, labels for form fields, sufficient color contrast, keyboard-operable controls, and useful alternative text for meaningful images. Do not rely on color alone to communicate important information."},
+{title:"Browser localStorage",category:"Web development",keywords:"localstorage save data browser javascript persistence",content:"localStorage saves small text values in a browser for the same site. Use localStorage.setItem('key', JSON.stringify(value)) to save structured data and JSON.parse(localStorage.getItem('key')) to read it. It is device/browser-specific and can be cleared by the user. Do not store passwords or secrets in it."},
+{title:"JSON basics",category:"Programming",keywords:"json data object array parse stringify api",content:"JSON is a text format for structured data. Objects use key-value pairs and arrays use square brackets. JavaScript's JSON.stringify converts compatible data to text; JSON.parse converts valid JSON text back to data. JSON does not support comments or trailing commas."},
+{title:"Python basics",category:"Programming",keywords:"python coding variables print loops beginner",content:"Python is a general-purpose programming language. A simple program can use print('Hello, world!'). Indentation defines code blocks. Common structures include variables, if statements, for loops, while loops, functions defined with def, lists, and dictionaries."},
+{title:"Python lists and dictionaries",category:"Programming",keywords:"python list array dictionary dict collection data",content:"A Python list stores an ordered collection, such as fruits = ['apple', 'pear']. A dictionary stores key-value pairs, such as person = {'name': 'Ari', 'age': 15}. Lists are indexed by position; dictionaries are accessed by key."},
+{title:"Roblox Studio introduction",category:"Game development",keywords:"roblox studio create game beginner lua luau parts",content:"Roblox Studio is the editor used to create Roblox experiences. Build a simple scene with Parts, use Explorer and Properties to organize objects, and add scripts using Luau. Test with Play before publishing. Make sure assets and code follow Roblox's rules."},
+{title:"Roblox Luau script",category:"Game development",keywords:"roblox lua luau script print variable part touched",content:"Roblox uses Luau, a language derived from Lua. A Script can run server-side code; a LocalScript runs client-side code in supported locations. Example: print('Hello from Roblox!'). For multiplayer gameplay, validate important actions and rewards on the server rather than trusting the client."},
+{title:"Game development loop",category:"Game development",keywords:"game design gameplay prototype loop controls feedback",content:"A basic game-development loop is: define one small goal, build a playable prototype, test it, observe what feels confusing or boring, and improve one thing at a time. Start with core movement and interaction before adding menus, cosmetics, or complex progression."},
+{title:"Game performance",category:"Game development",keywords:"fps lag optimization game performance assets scripts",content:"To improve game performance, profile before guessing. Reduce unnecessary per-frame work, avoid creating many objects repeatedly, reuse objects where appropriate, simplify expensive effects, and test on the weakest device you want to support. Keep network traffic and asset sizes reasonable."},
+{title:"3D coordinates",category:"Game development",keywords:"3d vector position x y z coordinates world space",content:"In a typical 3D coordinate system, X often represents left-right, Y up-down, and Z forward-back, but the exact convention depends on the engine. A position vector describes a location; a direction vector describes orientation or movement direction."},
+{title:"Game user interface",category:"Game development",keywords:"game ui hud menu buttons interface ux",content:"A useful game UI makes the main action obvious, keeps important information readable, and uses consistent buttons and spacing. On phones, use large touch targets, avoid placing controls too close together, and test the interface while playing rather than only in a static preview."},
+{title:"AI and language models",category:"Artificial intelligence",keywords:"ai llm language model neural network generate text",content:"An AI language model learns statistical patterns from training data and uses them to predict and generate text. A searchable knowledge base retrieves stored information, while a language model generates flexible responses. Adding documents to a search engine does not by itself train or create a language model."},
+{title:"Knowledge retrieval",category:"Artificial intelligence",keywords:"search retrieval knowledge base rag documents embeddings matching",content:"A knowledge retrieval system searches stored documents or examples and returns the most relevant matches for a question. A simple system can compare keywords. More advanced retrieval can use embeddings and reranking. Retrieval quality depends on useful source material, good matching, and clear chunking."},
+{title:"RAG explained",category:"Artificial intelligence",keywords:"rag retrieval augmented generation ai documents",content:"Retrieval-augmented generation (RAG) retrieves relevant documents for a question and provides them as context to a language model, which then writes an answer. Retrieval alone can find and display text but does not generate new reasoning in the same way a language model can."},
+{title:"AI hallucinations and fact checking",category:"Artificial intelligence",keywords:"hallucination misinformation verify sources accuracy",content:"AI systems can return incorrect or made-up claims. Check important information against reliable primary sources, compare multiple trustworthy references, and be cautious with medical, legal, financial, or safety-critical decisions. A source link is helpful, but the source still needs to be checked."},
+{title:"AI API costs and limits",category:"Artificial intelligence",keywords:"free api credits rate limits cost inference model usage",content:"Hosted AI APIs may charge per use or impose free-tier limits. A static website can run its own keyword search without paying for each question, but it will not have the flexible generation ability of a full language model. Running an open model locally avoids per-request provider fees but requires compatible hardware and resources."},
+{title:"Supabase basics",category:"Web development",keywords:"supabase database backend project table rest api",content:"Supabase provides hosted database and backend services, including a PostgreSQL database and a REST API. A browser app can use a publishable key for intended public access, but database permissions and Row Level Security policies must be configured carefully. Never put a service_role or secret key in frontend code."},
+{title:"Database tables",category:"Web development",keywords:"database table row column schema sql",content:"A database table organizes records into rows and columns. A row represents one record; a column represents a field such as title, subject, content, or source_url. Use appropriate data types, primary keys, and access policies. Back up important data before changing a schema."},
+{title:"Supabase Row Level Security",category:"Web development",keywords:"supabase rls row level security policies permissions public access",content:"Row Level Security (RLS) controls which database rows a user or role can read or change. Enable RLS for exposed tables and add policies that grant only the access required. Public read access can be appropriate for a public knowledge library, but private user data should not be exposed. Test policies using the intended role."},
+{title:"HTTP and APIs",category:"Web development",keywords:"http api request response fetch get post status code",content:"An API lets software exchange data through a defined interface. HTTP GET commonly reads data; POST commonly sends data to create or process something. In JavaScript, fetch() sends a request and returns a Promise. Check response.ok because HTTP errors do not always reject the Promise."},
+{title:"Internet and DNS",category:"Technology",keywords:"internet dns domain ip address website browser",content:"The internet is a network of interconnected networks. DNS translates human-readable domain names into information such as IP addresses used to locate services. A browser requests a resource from a server, then interprets HTML, CSS, JavaScript, and media to display a page."},
+{title:"Cybersecurity basics",category:"Technology",keywords:"cybersecurity security passwords phishing updates privacy",content:"Basic cybersecurity includes using unique passwords, enabling multifactor authentication when available, installing updates, checking links before signing in, and avoiding unexpected attachments. Never share secret API keys publicly. Use least-privilege permissions and keep backups of important work."},
+{title:"Passwords and secrets",category:"Technology",keywords:"password api key secret token credentials security",content:"Do not publish passwords, private access tokens, service-role keys, or other secrets in client-side code or public repositories. Frontend code can be viewed by visitors. Use server-side secret storage for private credentials and rotate a key if it is accidentally exposed."},
+{title:"Mathematics: percentages",category:"Mathematics",keywords:"math percentage percent calculate fraction",content:"To find a percentage of a number, multiply the number by the percentage written as a decimal. For example, 20% of 50 is 0.20 × 50 = 10. To find what percent A is of B, calculate (A ÷ B) × 100%, provided B is not zero."},
+{title:"Mathematics: algebra",category:"Mathematics",keywords:"math algebra equation solve x variable",content:"Algebra uses symbols to represent numbers. To solve an equation, apply the same valid operation to both sides to isolate the unknown. Example: x + 5 = 12, subtract 5 from both sides, so x = 7. Check by substituting the answer into the original equation."},
+{title:"Mathematics: area",category:"Mathematics",keywords:"math geometry area rectangle triangle circle formula",content:"Common area formulas: rectangle A = length × width; triangle A = 1/2 × base × height; circle A = πr², where r is the radius. Use consistent units. Area is measured in square units, such as cm² or m²."},
+{title:"Scientific method",category:"Science",keywords:"science hypothesis experiment evidence observation",content:"A common scientific process is to ask a question, review existing evidence, form a testable hypothesis, design a controlled investigation, collect and analyze data, and report results. Findings should be open to replication and revision when new evidence appears."},
+{title:"Atoms and elements",category:"Science",keywords:"chemistry atom proton neutron electron element periodic table",content:"An atom contains a nucleus with protons and usually neutrons, with electrons occupying regions around the nucleus. The number of protons defines the element. Atoms of the same element can have different numbers of neutrons; these are isotopes."},
+{title:"States of matter",category:"Science",keywords:"physics solid liquid gas plasma matter temperature",content:"The familiar states of matter are solid, liquid, gas, and plasma. In a solid, particles are held in relatively fixed arrangements; in a liquid they can move past one another; in a gas they are far apart and move freely. Heating or cooling can cause phase changes."},
+{title:"Gravity",category:"Science",keywords:"physics gravity mass planets falling force",content:"Gravity is an interaction associated with mass and energy. Near Earth's surface, it accelerates falling objects at about 9.8 metres per second squared when air resistance is negligible. Objects in orbit are continually falling around a planet rather than being beyond gravity."},
+{title:"Solar system",category:"Science",keywords:"space astronomy sun planets earth moon solar system",content:"The Solar System includes the Sun, eight recognized planets, dwarf planets, moons, asteroids, comets, and smaller bodies. The planets in order from the Sun are Mercury, Venus, Earth, Mars, Jupiter, Saturn, Uranus, and Neptune."},
+{title:"Climate and weather",category:"Science",keywords:"earth science climate weather temperature atmosphere",content:"Weather describes short-term atmospheric conditions, such as today's temperature or rainfall. Climate describes long-term patterns and averages over decades. A single cold day does not disprove long-term warming; climate trends are evaluated using many observations over time."},
+{title:"Human body basics",category:"Science",keywords:"biology human body organs heart lungs brain cells",content:"The human body is made of cells organized into tissues, organs, and organ systems. The heart circulates blood, the lungs exchange oxygen and carbon dioxide, the brain and nervous system process information, and the digestive system breaks food down and absorbs nutrients."},
+{title:"Evolution",category:"Science",keywords:"biology evolution natural selection adaptation species",content:"Evolution is change in heritable characteristics of populations across generations. Natural selection occurs when heritable traits affect survival or reproduction in a particular environment. Evolution happens in populations over generations, not because an individual deliberately changes its genes to meet a need."},
+{title:"World geography",category:"Geography",keywords:"geography continents oceans earth countries maps",content:"Geography studies Earth's places, environments, and how people interact with them. The commonly taught seven continents are Africa, Antarctica, Asia, Europe, North America, Australia/Oceania, and South America. The five commonly named oceans are Pacific, Atlantic, Indian, Southern, and Arctic."},
+{title:"History and primary sources",category:"History",keywords:"history evidence primary source secondary source past",content:"History studies the past using evidence. Primary sources come from the period being studied, such as letters, laws, photographs, or artifacts. Secondary sources interpret or analyze evidence, such as many textbooks and later historical studies. Reliable historical explanations compare sources and context."},
+{title:"Ancient civilizations",category:"History",keywords:"history ancient civilization mesopotamia egypt indus china",content:"Early complex civilizations developed in several regions, often near rivers that supported agriculture and transport. Examples include Mesopotamia near the Tigris and Euphrates, ancient Egypt along the Nile, the Indus Valley civilization, and early Chinese civilizations along major river systems."},
+{title:"Learning effectively",category:"Study skills",keywords:"study learning memory practice flashcards spaced repetition",content:"Effective study methods include active recall (trying to remember without looking), spaced practice over multiple days, explaining ideas in your own words, and mixing related problem types. Short focused sessions with breaks can help maintain attention. Rereading alone is often less effective than testing yourself."},
+{title:"Writing a clear paragraph",category:"Study skills",keywords:"writing essay paragraph topic sentence evidence explanation",content:"A clear paragraph often starts with a topic sentence, gives evidence or examples, explains how the evidence supports the point, and connects back to the main idea. Use precise wording and revise for clarity, organization, grammar, and audience."},
+{title:"Creative problem solving",category:"Problem solving",keywords:"ideas creativity design solve problem steps",content:"A practical problem-solving process is to define the problem, list constraints, brainstorm multiple options, choose a small test, evaluate what happened, and revise. Break large goals into smaller steps and write down assumptions so you can check them."},
+{title:"Digital privacy",category:"Technology",keywords:"privacy personal data tracking browser permissions",content:"Digital privacy means understanding what information an app or website collects and who can access it. Review permissions, avoid posting sensitive information, use trusted services, and remember that data stored in a public repository or frontend code can be visible to others."},
+{title:"Image formats",category:"Technology",keywords:"png jpg jpeg webp svg image format website",content:"JPEG is commonly used for photographs and uses lossy compression. PNG supports lossless compression and transparency. WebP often offers efficient compression for web images. SVG is a vector format suited to icons and scalable illustrations. Choose based on quality, transparency, and file size."},
+{title:"Version control with Git",category:"Programming",keywords:"git github commit repository version control history",content:"Git tracks changes to files over time. A commit records a snapshot with a message. A branch lets you work on a line of development separately. Before major edits, keep a backup or commit so you can recover a working version."},
+{title:"Software testing",category:"Programming",keywords:"testing bug test cases software quality",content:"Software testing checks whether a program behaves as expected. Test normal cases, edge cases, invalid input, and failures. After fixing a bug, repeat the test that exposed it and check nearby features for regressions. Clear expected results make tests more useful."},
+{title:"Project planning",category:"Productivity",keywords:"project plan milestones requirements priorities",content:"A simple project plan defines the goal, the user, the must-have features, and what counts as finished. Build the smallest useful version first, divide work into milestones, test each milestone, and keep a list of later ideas so they do not distract from core functionality."}
+];
+
+const starter = [
+ {q:"hello",c:"greeting",r:"Hey! I'm NEXORA. Ask me about a topic, or search the Knowledge Library."},
+ {q:"who are you",c:"identity",r:"I'm NEXORA AI Studio, a searchable knowledge engine. I can retrieve built-in reference topics, your saved examples, and connected documents. I am not a full generative language model."},
+ {q:"how do I make a website",c:"web development",r:"Start with an index.html file containing HTML, CSS, and JavaScript. Test it in your browser, then publish the static files with GitHub Pages. Open the Knowledge Library for more web-development guidance."}
+];
+
+let data=[],sent=0,busy=false,docsCache=null;
+try{const saved=localStorage.getItem("nexora_examples");data=saved?JSON.parse(saved):starter.slice();if(!Array.isArray(data))data=starter.slice();}catch(e){data=starter.slice();}
+try{sent=Number(localStorage.getItem("nexora_sent"))||0;}catch(e){}
+
+function save(){
+ try{localStorage.setItem("nexora_examples",JSON.stringify(data));localStorage.setItem("nexora_sent",String(sent));}
+ catch(e){$("trainresult").textContent="Could not save: browser storage may be full or disabled.";}
+}
+const STOP=new Set(["the","and","you","are","how","what","who","for","can","does","with","your","this","that","from","have","has","was","were","will","would","could","should","about","into","then","than","there","their","they","them","its","it's","not","but","all","any","use","using","make","get","like","when","where","why","which","please","tell","explain","show","give","help","does","did","is","are","a","an","to","of","in","on","at","by","be","it","or","as","if","i","me","my","we","our"]);
+function normalize(s){return String(s||"").toLowerCase().replace(/javascript/g,"javascript").replace(/[^a-z0-9+#. ]/g," ").replace(/\s+/g," ").trim();}
+function tokens(s){return normalize(s).split(" ").filter(w=>w.length>1&&!STOP.has(w));}
+function similarity(question,text){
+ const a=new Set(tokens(question)),b=new Set(tokens(text));if(!a.size||!b.size)return 0;
+ let hits=0;for(const w of a)if(b.has(w))hits++;
+ const coverage=hits/a.size;
+ const precision=hits/b.size;
+ return Math.min(1,coverage*.78+Math.min(precision,.5)*.22);
+}
+function scoreText(question,text,keywords=""){
+ const q=normalize(question),all=normalize(text+" "+keywords);
+ let score=similarity(q,all);
+ const phrase=normalize(text);
+ if(phrase&&q===phrase)score=1;
+ const qTokens=tokens(q), textTokens=new Set(tokens(text));
+ if(qTokens.length&&qTokens.every(w=>textTokens.has(w)))score=Math.min(1,score+.22);
+ return score;
+}
+function localMatch(question){
+ let best=null,high=0;
+ for(const e of data){
+  const s=Math.max(scoreText(question,e.q,e.c),similarity(question,e.q+" "+e.c+" "+e.r)*.82);
+  if(s>high){high=s;best=e;}
+ }
+ return best&&high>=.22?{answer:best.r,title:"Your saved example · "+(best.c||"General"),source:"",score:high,kind:"local"}:null;
+}
+function builtInMatch(question){
+ let best=null,high=0;
+ for(const k of KNOWLEDGE){
+  const s=Math.max(scoreText(question,k.title,k.keywords),similarity(question,k.title+" "+k.category+" "+k.keywords+" "+k.content)*.92);
+  if(s>high){high=s;best=k;}
+ }
+ return best&&high>=.17?{answer:best.content,title:best.title+" · "+best.category,source:"",score:high,kind:"built-in"}:null;
+}
+async function fetchDocuments(){
+ const endpoint=new URL(SUPABASE_URL+"/rest/v1/knowledge_documents");
+ endpoint.searchParams.set("select","title,subject,content,source_url");endpoint.searchParams.set("limit","1000");
+ const response=await fetch(endpoint.toString(),{headers:{"apikey":SUPABASE_KEY,"Authorization":"Bearer "+SUPABASE_KEY}});
+ if(!response.ok)throw new Error("Supabase HTTP "+response.status+". Check the table, Data API access, and read policies.");
+ const docs=await response.json();if(!Array.isArray(docs))throw new Error("Unexpected database response.");
+ docsCache=docs.filter(d=>d&&typeof d.content==="string");return docsCache;
+}
+function documentMatch(question,docs){
+ let best=null,high=0;
+ for(const doc of docs){
+  const title=doc.title||"Untitled document";
+  const s=Math.max(scoreText(question,title,(doc.subject||"")),similarity(question,title+" "+(doc.subject||"")+" "+doc.content)*.82);
+  if(s>high){high=s;best=doc;}
+ }
+ return best&&high>=.18?{answer:best.content,title:(best.title||"Untitled document")+" · Online library",source:best.source_url||"",score:high,kind:"online"}:null;
+}
+async function findAnswer(question){
+ let docs=[],dbError=null;
+ try{docs=docsCache||await fetchDocuments();}catch(e){dbError=e;}
+ const candidates=[builtInMatch(question),localMatch(question),documentMatch(question,docs)].filter(Boolean).sort((a,b)=>b.score-a.score);
+ if(candidates.length){
+  const best=candidates[0];
+  if(best.kind==="built-in")best.title="Built-in knowledge · "+best.title;
+  return best;
+ }
+ if(dbError)return {answer:"I couldn't reach the online document library ("+dbError.message+"). I can still search the built-in knowledge and your local examples. You can add more information in Teach NEXORA.",title:"Connection notice",source:"",score:0};
+ return {answer:"I couldn't find a strong match yet. Try different keywords, search the Knowledge Library, or teach me an example with the answer you want me to use.",title:"No close match",source:"",score:0};
+}
+function showAnswer(result,container){
+ container.replaceChildren();
+ const answer=document.createElement("div");answer.textContent=result.answer;container.appendChild(answer);
+ if(result.title){const p=document.createElement("span");p.className="source";p.textContent="Source: "+result.title+(typeof result.score==="number"?" · match "+Math.round(result.score*100)+"%":"");container.appendChild(p);}
+ if(result.source){
+  try{const u=new URL(result.source);if(["https:","http:"].includes(u.protocol)){const a=document.createElement("a");a.href=u.href;a.target="_blank";a.rel="noopener noreferrer";a.textContent="Open source ↗";container.appendChild(a);}}catch(e){}
+ }
+}
+function bubble(text,who){
+ const d=document.createElement("div");d.className="msg "+who;d.textContent=text;$("chat").appendChild(d);$("chat").scrollTop=$("chat").scrollHeight;return d;
+}
+function refresh(){
+ $("total").textContent=data.length;$("builtin").textContent=KNOWLEDGE.length;
+ $("cats").textContent=new Set([...data.map(e=>e.c||"General"),...KNOWLEDGE.map(e=>e.category)]).size;
+ $("sent").textContent=sent;$("examplecount").textContent=data.length+" EXAMPLES";
+ const box=$("examples");box.replaceChildren();const filter=$("filter").value.toLowerCase();
+ data.forEach((e,i)=>{
+  if(!((e.q+" "+e.c+" "+e.r).toLowerCase().includes(filter)))return;
+  const card=document.createElement("div");card.className="example";
+  const head=document.createElement("div");head.className="examplehead";
+  const title=document.createElement("strong");title.textContent=e.q+" · "+(e.c||"General");
+  const del=document.createElement("button");del.className="btn danger";del.textContent="Delete";del.onclick=()=>{data.splice(i,1);save();refresh();};
+  head.append(title,del);const reply=document.createElement("p");reply.textContent=e.r;card.append(head,reply);box.appendChild(card);
+ });
+ if(!box.children.length)box.innerHTML='<div class="empty">No matching local examples.</div>';
+}
+function renderLibrary(){
+ const term=$("libsearch").value.toLowerCase().trim(),box=$("libraryitems");box.replaceChildren();
+ const matches=KNOWLEDGE.filter(k=>(k.title+" "+k.category+" "+k.keywords+" "+k.content).toLowerCase().includes(term));
+ $("libcount").textContent=matches.length+" of "+KNOWLEDGE.length+" built-in topics";
+ const cats=[...new Set(KNOWLEDGE.map(k=>k.category))];
+ const catbox=$("libcats");catbox.replaceChildren();
+ const all=document.createElement("button");all.className="suggestion";all.textContent="All topics";all.onclick=()=>{$("libsearch").value="";renderLibrary();};catbox.appendChild(all);
+ cats.forEach(c=>{const b=document.createElement("button");b.className="suggestion";b.textContent=c;b.onclick=()=>{$("libsearch").value=c;renderLibrary();};catbox.appendChild(b);});
+ matches.forEach(k=>{
+  const card=document.createElement("article");card.className="example";
+  const head=document.createElement("div");head.className="examplehead";
+  const title=document.createElement("strong");title.textContent=k.title;
+  const pill=document.createElement("span");pill.className="pill";pill.textContent=k.category;
+  head.append(title,pill);const p=document.createElement("p");p.textContent=k.content;card.append(head,p);
+  const ask=document.createElement("button");ask.className="btn";ask.textContent="Ask about this";ask.onclick=()=>{showPage("chatpage");$("question").value=k.title;$("question").focus();};
+  card.appendChild(ask);box.appendChild(card);
+ });
+ if(!matches.length)box.innerHTML='<div class="empty">No topics match that search.</div>';
+}
+function showPage(id){
+ document.querySelectorAll("[data-page]").forEach(b=>b.classList.toggle("active",b.dataset.page===id));
+ document.querySelectorAll(".page").forEach(p=>p.classList.toggle("active",p.id===id));
+ if(id==="librarypage")renderLibrary();
+}
+document.querySelectorAll("[data-page]").forEach(b=>b.addEventListener("click",()=>showPage(b.dataset.page)));
+document.querySelectorAll("[data-prompt]").forEach(b=>b.addEventListener("click",()=>{$("question").value=b.dataset.prompt;$("question").focus();}));
+$("chatform").addEventListener("submit",async event=>{
+ event.preventDefault();if(busy)return;
+ const question=$("question").value.trim();if(!question)return;
+ busy=true;$("sendbtn").disabled=true;bubble(question,"user");$("question").value="";
+ const loading=bubble("Searching built-in knowledge, your examples, and connected documents...","bot");
+ try{const result=await findAnswer(question);loading.remove();const holder=document.createElement("div");holder.className="msg bot";$("chat").appendChild(holder);showAnswer(result,holder);$("chat").scrollTop=$("chat").scrollHeight;}
+ catch(e){loading.textContent="Search failed: "+e.message;}
+ sent++;save();refresh();busy=false;$("sendbtn").disabled=false;$("question").focus();
+});
+$("sample").onclick=()=>{$("bulk").value=
+"What is HTML? || programming || HTML structures the content of a web page.\n"+
+"What is CSS? || programming || CSS controls the look and layout of a web page.\n"+
+"What is JavaScript? || programming || JavaScript adds behavior and interactivity to web pages.\n"+
+"How do I publish a website? || web development || Put your index.html and other static files in a GitHub repository, then enable GitHub Pages in Settings > Pages.\n"+
+"What is Roblox Luau? || game development || Luau is the scripting language used in Roblox Studio.";};
+$("train").onclick=()=>{
+ let added=0,skipped=0;
+ $("bulk").value.split(/\r?\n/).forEach(line=>{
+  if(!line.trim())return;const p=line.split("||").map(s=>s.trim());
+  if(p.length<3||!p[0]||!p[1]||!p.slice(2).join("||").trim()){skipped++;return;}
+  data.push({q:p[0],c:p[1],r:p.slice(2).join("||").trim()});added++;
+ });
+ save();refresh();$("trainresult").textContent="Added "+added+" examples. Skipped "+skipped+" invalid lines.";
+};
+$("addone").onclick=()=>{
+ const q=$("q").value.trim(),c=$("c").value.trim(),r=$("r").value.trim();
+ if(!q||!c||!r){$("trainresult").textContent="Fill in all three fields first.";return;}
+ data.push({q,c,r});["q","c","r"].forEach(id=>$(id).value="");save();refresh();$("trainresult").textContent="Example saved locally.";
+};
+$("filter").addEventListener("input",refresh);
+$("libsearch").addEventListener("input",renderLibrary);
+$("clear").onclick=()=>{if(confirm("Delete all local training examples? This does not delete built-in knowledge or Supabase documents.")){data=[];save();refresh();}};
+$("export").onclick=()=>{
+ const blob=new Blob([JSON.stringify(data,null,2)],{type:"application/json"});const url=URL.createObjectURL(blob);
+ const a=document.createElement("a");a.href=url;a.download="nexora-examples.json";a.click();URL.revokeObjectURL(url);
+};
+$("importfile").addEventListener("change",async()=>{
+ const file=$("importfile").files&&$("importfile").files[0];if(!file)return;
+ try{
+  const parsed=JSON.parse(await file.text());if(!Array.isArray(parsed))throw new Error("JSON must contain an array.");
+  const clean=parsed.filter(e=>e&&typeof e.q==="string"&&typeof e.c==="string"&&typeof e.r==="string");
+  data.push(...clean);save();refresh();$("importstatus").textContent="Imported "+clean.length+" examples.";
+ }catch(e){$("importstatus").textContent="Import failed: "+e.message;}
+ $("importfile").value="";
+});
+async function checkDatabase(){
+ $("connection").textContent="● CHECKING";$("connection").classList.remove("error");$("dbstatus").textContent="Connecting to Supabase...";
+ try{const docs=await fetchDocuments();$("connection").textContent="● ONLINE";$("dbstatus").textContent="Connected. "+docs.length+" document(s) available in knowledge_documents.";}
+ catch(e){$("connection").textContent="● LOCAL MODE";$("connection").classList.add("error");$("dbstatus").textContent="Online library unavailable: "+e.message+" Built-in knowledge and local examples can still work.";}
+}
+$("checkdb").onclick=checkDatabase;
+$("loaddocs").onclick=async()=>{
+ $("docstatus").textContent="Loading documents...";$("documents").replaceChildren();
+ try{
+  const docs=await fetchDocuments();$("docstatus").textContent=docs.length+" document(s) found.";
+  docs.forEach(doc=>{
+   const card=document.createElement("div");card.className="example";
+   const title=document.createElement("strong");title.textContent=doc.title||"Untitled document";
+   const subject=document.createElement("p");subject.textContent="Subject: "+(doc.subject||"General");
+   const content=document.createElement("p");content.className="doccontent";content.textContent=doc.content||"";
+   card.append(title,subject,content);
+   if(doc.source_url){try{const u=new URL(doc.source_url);if(["https:","http:"].includes(u.protocol)){const a=document.createElement("a");a.href=u.href;a.target="_blank";a.rel="noopener noreferrer";a.textContent="Open source ↗";card.appendChild(a);}}catch(e){}}
+   $("documents").appendChild(card);
+  });
+  if(!docs.length)$("documents").innerHTML='<div class="empty">The online library is empty. Built-in knowledge is still available.</div>';
+ }catch(e){$("docstatus").textContent=e.message;}
+};
+$("test").onclick=async()=>{
+ const q=$("testq").value.trim();if(!q)return;
+ $("result").textContent="Searching...";
+ try{const result=await findAnswer(q);showAnswer(result,$("result"));}
+ catch(e){$("result").textContent="Test failed: "+e.message;}
+};
+refresh();renderLibrary();checkDatabase();
+})();
+</script>
+</body>
+</html>
